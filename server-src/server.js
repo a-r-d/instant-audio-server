@@ -2,6 +2,7 @@ import express from 'express';
 import colors from 'colors';
 import { argv } from 'yargs';
 import path from 'path';
+import cors from 'cors';
 
 var app = express();
 var port = argv.port || 3000;
@@ -13,6 +14,8 @@ import apis from './routes/api';
 
 var applicationDir = path.resolve(__dirname, '..');
 
+
+app.use(cors());
 app.use(express.static(applicationDir + '/client-compiled'));
 app.get('/', (req, res) => { res.sendFile(applicationDir + '/client-compiled/index.html') });
 app.use('/api', apis);
