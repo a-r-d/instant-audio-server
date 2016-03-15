@@ -11,12 +11,19 @@ app.set('port', port);
 
 import apis from './routes/api';
 
+var applicationDir = path.resolve(__dirname, '..');
+
+app.use(express.static(applicationDir + '/client-compiled'));
+app.get('/', (req, res) => { res.sendFile(applicationDir + '/client-compiled/index.html') });
 app.use('/api', apis);
+
 
 app.listen(port, () => {
   console.log('Instant Audio Server is up!'.rainbow, 
     `\n => port=${port}, library=${library}`);
 });
 
+
 export default app;
+
 
