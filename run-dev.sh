@@ -1,3 +1,4 @@
+tree -I node_modules
 echo "Building..."
 npm run build
 echo "Initializing..."

@@ -1,2 +1,2 @@
-var server = require('./lib/server');
+var server = require('./server-compiled/server');
 
