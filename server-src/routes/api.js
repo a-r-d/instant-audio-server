@@ -2,8 +2,56 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import mimetype from 'mimetype';
+import async from 'async';
 
 var router = express.Router();
+
+var statsCache = new Map();
+
+function getDirListDetails(fullPath, cb) {
+ 
+  function hasCached(uri) {
+    return statsCache.get(uri);
+  }
+
+  var filesRepr = [];
+
+  function getStats(file, cb) {
+    var uri = path.join(fullPath, file);
+    if(hasCached(uri)) {
+      filesRepr.push(hasCached(uri));
+      return cb();
+    }
+
+    fs.stat(uri, (err, stats) => {
+      if(err) return cb(err);
+      var repr = statsToRepr(uri, stats);
+      statsCache.set(uri, repr);
+      filesRepr.push(repr);
+      return cb(null);
+    });
+  }
+
+  function statsToRepr(uri, stats) {
+    return {
+      filePath: uri,
+      fileName: path.basename(uri),
+      isDir: stats.isDirectory(),
+      isFile: stats.isFile(),
+      parsed: path.parse(uri)
+    };
+  }
+  
+  fs.readdir(fullPath, (err, files) => {
+    if(err) return cb(err);
+    async.eachLimit(files, 5, getStats, function(err) {
+      if(err) {
+        return cb(err, filesRepr);
+      }
+      return cb(err, filesRepr);
+    });
+  });
+}
 
 
 router.get('/directory',(req, res, next) => {
@@ -14,7 +62,7 @@ router.get('/directory',(req, res, next) => {
 
   console.log(`Listing dir: ${dir}`);
 
-  fs.readdir(dir, (err, files) => {
+  getDirListDetails(dir, (err, files) => {
     if(err) {
       return next(err);
     }
